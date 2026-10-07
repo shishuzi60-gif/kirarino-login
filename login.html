@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Googleログインテスト（完全版）</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; background-color: #f9f9f9; }
+        .container { max-width: 400px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        button { padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 10px; border: none; border-radius: 5px; transition: 0.2s; }
+        .btn-login { background-color: #4285F4; color: white; }
+        .btn-login:hover { background-color: #357ae8; }
+        .btn-logout { background-color: #e0e0e0; color: #333; }
+        .btn-logout:hover { background-color: #d5d5d5; }
+        #user-img { width: 80px; height: 80px; border-radius: 50%; margin: 20px auto; display: none; border: 3px solid #4285F4; }
+        #status { font-size: 18px; margin-bottom: 20px; color: #555; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Googleログインテスト 🧪</h1>
+        <div id="status">読み込み中...</div>
+        <img id="user-img" src="" alt="ユーザーアイコン">
+        
+        <!-- ボタンに直接処理を紐付けず、IDを付与してJavaScript側で安全に制御します -->
+        <button id="btn-login" class="btn-login">Googleでログイン</button>
+        <button id="btn-logout" class="btn-logout" style="display: none;">ログアウト</button>
+    </div>
+
+    <!-- Firebaseのプログラムをモジュールとして読み込み -->
+    <script type="module">
+        import { initializeApp } from "https://gstatic.com";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://gstatic.com";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCmAzKXEcfW3CqGmp3Bht7AFL_ZzYoWLqk",
+            authDomain: "kirarino-login.firebaseapp.com",
+            projectId: "kirarino-login",
+            storageBucket: "kirarino-login.firebasestorage.app",
+            messagingSenderId: "750724427247",
+            appId: "1:750724427247:web:825e6f2bf8e1d65f639a1a",
+        };
+
+        // Firebaseの初期化
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // 画面の要素（ボタンやテキスト）を取得
+        const loginBtn = document.getElementById("btn-login");
+        const logoutBtn = document.getElementById("btn-logout");
+        const statusDiv = document.getElementById("status");
+        const userImg = document.getElementById("user-img");
+
+        // ログインボタンが押された時の処理
+        loginBtn.addEventListener("click", () => {
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    console.log("ログイン成功:", result.user);
+                }).catch((error) => {
+                    console.error("ログインエラーが発生しました:", error);
+                    alert("ログインに失敗しました。コンソールを確認してください。");
+                });
+        });
+
+        // ログアウトボタンが押された時の処理
+        logoutBtn.addEventListener("click", () => {
+            signOut(auth).then(() => {
+                console.log("ログアウトしました");
+            });
+        });
+
+        // ログイン状態を常に監視する処理
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // ログインしている時
+                statusDiv.innerHTML = `こんにちは、<br><strong>${user.displayName}</strong> さん！`;
+                userImg.src = user.photoURL;
+                userImg.style.display = "block";
+                loginBtn.style.display = "none";  // ログインボタンを隠す
+                logoutBtn.style.display = "inline-block"; // ログアウトボタンを出す
+            } else {
+                // ログインしていない時
+                statusDiv.innerHTML = "ログインしていません。";
+                userImg.style.display = "none";
+                loginBtn.style.display = "inline-block"; // ログインボタンを出す
+                logoutBtn.style.display = "none";  // ログアウトボタンを隠す
+            }
+        });
+    </script>
+
+</body>
+</html>
